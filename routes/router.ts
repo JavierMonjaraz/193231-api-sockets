@@ -1,43 +1,29 @@
 import { Router, Request, Response } from 'express';
-import { Pool } from 'pg';
-
-require('dotenv').config();
-
-const pool = new Pool();
-
-pool.connect((err) => {
-    if (err) {
-        return console.error('Error al conectar la base de datos')
-    }else{
-        return console.log('Se ha conectado a la base de datos de K8s')
-    }
-  })
+import { connection } from '../global/dbConnection'
 
 const router = Router();
 
-router.get('/mensajes', (req: Request, res: Response) => {
-    res.json({
-        ok: true,
-        mensaje: 'GET listo!'
-    });
+router.get('/mensajes', (request: Request, response: Response) => {
+    const consulta = 'SELECT * FROM public.mensajes';
+
+    connection.query(consulta).then(res => {
+        response.status(201).json(res.rows);
+    }).catch(e => console.error(e.stack));
 });
 
-router.post('/mensajes', (req: Request, res: Response) => {
+router.post('/mensajes', (request: Request, response: Response) => {
+    const consulta = 'INSERT INTO public.mensajes(de, cuerpo) VALUES ($1, $2);'
 
-    const cuerpo = req.body.cuerpo;
-    const de = req.body.de;
+    const cuerpo = request.body.cuerpo;
+    const de = request.body.de;
     const ok = true;
 
-    res.json({
-        ok,
-        cuerpo,
-        de
-        // mensaje: 'POST listo!'
-    });
+    connection.query(consulta, [de, cuerpo]).then(res => {
+        response.status(201).json(res);
+    }).catch(e => console.error(e.stack));
 });
 
 router.post('/mensajes/:id', (req: Request, res: Response) => {
-
     const cuerpo = req.body.cuerpo;
     const de = req.body.de;
     const id = req.params.id;
