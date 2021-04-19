@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { connection } from '../global/dbConnection'
+import { connection } from './dbConnection'
 
 const router = Router();
 
